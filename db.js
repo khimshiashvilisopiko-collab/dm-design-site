@@ -1,8 +1,15 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
-const db = new Database(path.join(__dirname, 'data', 'dmdesign.db'));
+// ensure the data directory exists before opening the database —
+// Git does not track empty folders, so on a fresh clone/deploy this
+// directory may not exist yet
+const dataDir = path.join(__dirname, 'data');
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
+
+const db = new Database(path.join(dataDir, 'dmdesign.db'));
 db.pragma('journal_mode = WAL');
 
 db.exec(`
