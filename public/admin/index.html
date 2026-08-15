@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DM Design — მართვის პანელი</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+Georgian:wght@500;600&family=Noto+Sans+Georgian:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32.png">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+<!-- LOGIN VIEW -->
+<div class="login-screen" id="loginScreen">
+  <form class="login-card" id="loginForm">
+    <h1>DM Design</h1>
+    <p class="login-sub">მართვის პანელი</p>
+    <div class="form-row">
+      <label for="username">მომხმარებელი</label>
+      <input type="text" id="username" name="username" autocomplete="username" required>
+    </div>
+    <div class="form-row">
+      <label for="password">პაროლი</label>
+      <input type="password" id="password" name="password" autocomplete="current-password" required>
+    </div>
+    <button type="submit" class="btn-primary">შესვლა</button>
+    <p class="login-error" id="loginError"></p>
+  </form>
+</div>
+
+<!-- ADMIN APP -->
+<div class="admin-app" id="adminApp" hidden>
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-chip"><img src="/assets/logo-icon-trimmed.png" alt="" class="brand-logo"></span>
+      <span>DM <em>Design</em></span>
+    </div>
+    <nav>
+      <button class="side-link active" data-view="catalog">კატალოგი</button>
+      <button class="side-link" data-view="inquiries">მოთხოვნები <span class="badge" id="inquiryBadge"></span></button>
+      <button class="side-link" data-view="settings">პარამეტრები</button>
+    </nav>
+    <div class="sidebar-foot">
+      <span id="loggedInUser"></span>
+      <button id="logoutBtn">გასვლა</button>
+    </div>
+  </aside>
+
+  <main class="admin-main">
+
+    <!-- CATALOG VIEW -->
+    <section class="view" id="view-catalog">
+      <div class="view-head">
+        <h2>კატალოგი</h2>
+        <button class="btn-primary" id="newItemBtn">+ ახალი ნამუშევარი</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>სურათი</th><th>სათაური</th><th>კატეგორია</th><th>რიგი</th><th>გამორჩეული</th><th></th></tr>
+          </thead>
+          <tbody id="catalogTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- INQUIRIES VIEW -->
+    <section class="view" id="view-inquiries" hidden>
+      <div class="view-head"><h2>მოთხოვნები</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>თარიღი</th><th>სახელი</th><th>ტელეფონი</th><th>ელფოსტა</th><th>მიმართულება</th><th>შეტყობინება</th><th>სტატუსი</th><th></th></tr>
+          </thead>
+          <tbody id="inquiriesTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SETTINGS VIEW -->
+    <section class="view" id="view-settings" hidden>
+      <div class="view-head"><h2>პარამეტრები</h2></div>
+      <form class="settings-card" id="passwordForm">
+        <h3>პაროლის შეცვლა</h3>
+        <div class="form-row">
+          <label for="currentPassword">მიმდინარე პაროლი</label>
+          <input type="password" id="currentPassword" required>
+        </div>
+        <div class="form-row">
+          <label for="newPassword">ახალი პაროლი</label>
+          <input type="password" id="newPassword" minlength="6" required>
+        </div>
+        <button type="submit" class="btn-primary">განახლება</button>
+        <p class="form-msg" id="passwordMsg"></p>
+      </form>
+    </section>
+
+  </main>
+</div>
+
+<!-- ITEM MODAL -->
+<div class="modal-overlay" id="itemModal" hidden>
+  <form class="modal-card" id="itemForm" enctype="multipart/form-data">
+    <h3 id="modalTitle">ახალი ნამუშევარი</h3>
+    <input type="hidden" id="itemId" name="id">
+    <div class="form-row">
+      <label for="itemTitle">სათაური *</label>
+      <input type="text" id="itemTitle" name="title" required>
+    </div>
+    <div class="form-row">
+      <label for="itemCategory">კატეგორია *</label>
+      <select id="itemCategory" name="category" required>
+        <option value="kitchen">სამზარეულო</option>
+        <option value="bathroom">აბაზანა</option>
+        <option value="living">მისაღები</option>
+        <option value="custom">ინდივიდუალური</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <label for="itemDescription">აღწერა</label>
+      <textarea id="itemDescription" name="description" rows="3"></textarea>
+    </div>
+    <div class="form-row">
+      <label for="itemSort">რიგითობა (დიდი რიცხვი = უფრო ზემოთ)</label>
+      <input type="number" id="itemSort" name="sort_order" value="0">
+    </div>
+    <div class="form-row form-row-checkbox">
+      <label><input type="checkbox" id="itemFeatured" name="featured"> გამორჩეული</label>
+    </div>
+    <div class="form-row">
+      <label for="itemImage">სურათი <span id="imageRequiredNote">*</span></label>
+      <input type="file" id="itemImage" name="image" accept="image/png,image/jpeg,image/webp">
+      <img id="imagePreview" class="image-preview" hidden>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn-secondary" id="cancelModalBtn">გაუქმება</button>
+      <button type="submit" class="btn-primary">შენახვა</button>
+    </div>
+    <p class="form-msg" id="itemFormMsg"></p>
+  </form>
+</div>
+
+<script src="/admin/admin.js"></script>
+</body>
+</html>
