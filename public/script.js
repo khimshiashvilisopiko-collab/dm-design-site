@@ -49,6 +49,7 @@ function renderGallery(filter) {
       <div class="gallery-caption">
         <span>${CATEGORY_LABELS[item.category] || item.category}</span>
         <h4>${escapeHtml(item.title)}</h4>
+        ${item.description ? `<p>${escapeHtml(item.description)}</p>` : ''}
       </div>
     </div>
   `;
