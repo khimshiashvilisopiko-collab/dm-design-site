@@ -1,4 +1,4 @@
-const CATEGORY_LABELS = { kitchen: 'სამზარეულო', bathroom: 'აბაზანა', living: 'მისაღები', custom: 'ინდივიდუალური' };
+const CATEGORY_LABELS = { kitchen: 'სამზარეულო', bathroom: 'აბაზანა', living: 'მისაღები', bedroom: 'საძინებელი', custom: 'ინდივიდუალური' };
 const STATUS_LABELS = { new: 'ახალი', contacted: 'დაკავშირებული', in_progress: 'პროცესში', closed: 'დახურული' };
 
 const loginScreen = document.getElementById('loginScreen');
