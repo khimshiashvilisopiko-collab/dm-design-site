@@ -68,11 +68,16 @@ async function loadCatalogTable() {
     tbody.innerHTML = '<tr class="empty-row"><td colspan="6">კატალოგში ჯერ არაფერია დამატებული</td></tr>';
     return;
   }
-  tbody.innerHTML = items.map(item => `
+  tbody.innerHTML = items.map(item => {
+    const count = (item.media && item.media.length) || 1;
+    return `
     <tr data-id="${item.id}">
-      <td>${item.media_type === 'video'
-        ? `<video class="thumb" src="${item.image_path}" muted></video>`
-        : `<img class="thumb" src="${item.image_path}" alt="">`}</td>
+      <td class="thumb-cell">
+        ${item.media_type === 'video'
+          ? `<video class="thumb" src="${item.image_path}" muted></video>`
+          : `<img class="thumb" src="${item.image_path}" alt="">`}
+        ${count > 1 ? `<span class="thumb-count">${count}</span>` : ''}
+      </td>
       <td>${escapeHtml(item.title)}</td>
       <td>${CATEGORY_LABELS[item.category] || item.category}</td>
       <td>${item.sort_order}</td>
@@ -82,7 +87,8 @@ async function loadCatalogTable() {
         <button class="danger delete-btn">წაშლა</button>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 
   tbody.querySelectorAll('.edit-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
@@ -166,9 +172,12 @@ function escapeHtml(str) {
 const itemModal = document.getElementById('itemModal');
 const itemForm = document.getElementById('itemForm');
 const modalTitle = document.getElementById('modalTitle');
-const imagePreview = document.getElementById('imagePreview');
-const videoPreview = document.getElementById('videoPreview');
 const imageRequiredNote = document.getElementById('imageRequiredNote');
+const imageFieldLabel = document.getElementById('imageFieldLabel');
+const existingMediaRow = document.getElementById('existingMediaRow');
+const existingMediaThumbs = document.getElementById('existingMediaThumbs');
+const newFilesPreview = document.getElementById('newFilesPreview');
+let currentEditItemId = null;
 
 function isVideoFile(name) {
   return /\.(mp4|webm|mov)$/i.test(name || '');
@@ -177,11 +186,41 @@ function isVideoFile(name) {
 document.getElementById('newItemBtn').addEventListener('click', () => openItemModal(null));
 document.getElementById('cancelModalBtn').addEventListener('click', closeItemModal);
 
+function renderExistingMedia(item) {
+  if (!item || !item.media || item.media.length < 1) {
+    existingMediaRow.hidden = true;
+    return;
+  }
+  existingMediaRow.hidden = false;
+  existingMediaThumbs.innerHTML = item.media.map(m => `
+    <div class="media-thumb" data-media-id="${m.id}">
+      ${m.media_type === 'video'
+        ? `<video src="${m.media_path}" muted></video>`
+        : `<img src="${m.media_path}" alt="">`}
+      <button type="button" class="media-thumb-remove" data-media-id="${m.id}" title="წაშლა">×</button>
+    </div>
+  `).join('');
+
+  existingMediaThumbs.querySelectorAll('.media-thumb-remove').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      if (!confirm('წავშალო ეს ფოტო/ვიდეო?')) return;
+      const mediaId = btn.dataset.mediaId;
+      await fetch(`/api/admin/catalog/${currentEditItemId}/media/${mediaId}`, { method: 'DELETE' });
+      const res = await fetch('/api/admin/catalog');
+      const items = await res.json();
+      const refreshed = items.find(i => String(i.id) === String(currentEditItemId));
+      renderExistingMedia(refreshed);
+      loadCatalogTable();
+    });
+  });
+}
+
 function openItemModal(item) {
   itemForm.reset();
   document.getElementById('itemFormMsg').textContent = '';
-  imagePreview.hidden = true;
-  videoPreview.hidden = true;
+  newFilesPreview.innerHTML = '';
+  currentEditItemId = item ? item.id : null;
+
   if (item) {
     modalTitle.textContent = 'ნამუშევრის რედაქტირება';
     document.getElementById('itemId').value = item.id;
@@ -190,17 +229,14 @@ function openItemModal(item) {
     document.getElementById('itemDescription').value = item.description || '';
     document.getElementById('itemSort').value = item.sort_order;
     document.getElementById('itemFeatured').checked = !!item.featured;
-    if (item.media_type === 'video') {
-      videoPreview.src = item.image_path;
-      videoPreview.hidden = false;
-    } else {
-      imagePreview.src = item.image_path;
-      imagePreview.hidden = false;
-    }
+    renderExistingMedia(item);
+    imageFieldLabel.textContent = 'დაამატე მეტი ფოტო/ვიდეო';
     imageRequiredNote.style.display = 'none';
   } else {
     modalTitle.textContent = 'ახალი ნამუშევარი';
     document.getElementById('itemId').value = '';
+    existingMediaRow.hidden = true;
+    imageFieldLabel.textContent = 'ფოტო ან ვიდეო';
     imageRequiredNote.style.display = 'inline';
   }
   itemModal.hidden = false;
@@ -208,18 +244,16 @@ function openItemModal(item) {
 function closeItemModal() { itemModal.hidden = true; }
 
 document.getElementById('itemImage').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const url = URL.createObjectURL(file);
-  if (isVideoFile(file.name)) {
-    imagePreview.hidden = true;
-    videoPreview.src = url;
-    videoPreview.hidden = false;
-  } else {
-    videoPreview.hidden = true;
-    imagePreview.src = url;
-    imagePreview.hidden = false;
-  }
+  newFilesPreview.innerHTML = '';
+  Array.from(e.target.files).forEach(file => {
+    const url = URL.createObjectURL(file);
+    const wrap = document.createElement('div');
+    wrap.className = 'media-thumb';
+    wrap.innerHTML = isVideoFile(file.name)
+      ? `<video src="${url}" muted></video>`
+      : `<img src="${url}" alt="">`;
+    newFilesPreview.appendChild(wrap);
+  });
 });
 
 itemForm.addEventListener('submit', async (e) => {

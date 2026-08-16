@@ -85,6 +85,12 @@ th, td { text-align: left; padding: 14px 16px; border-bottom: 1px solid var(--li
 th { background: #FAF6EF; font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--stone); }
 tr:last-child td { border-bottom: none; }
 .thumb, video.thumb { width: 52px; height: 52px; object-fit: cover; border-radius: 3px; }
+.thumb-cell { position: relative; }
+.thumb-count {
+  position: absolute; bottom: 2px; right: 2px;
+  background: var(--espresso); color: var(--ivory);
+  font-size: 10px; line-height: 1; padding: 3px 5px; border-radius: 8px;
+}
 .row-actions { display: flex; gap: 10px; }
 .row-actions button { background: none; border: none; font-size: 12.5px; color: var(--brass); }
 .row-actions button.danger { color: var(--danger); }
@@ -117,6 +123,23 @@ tr:last-child td { border-bottom: none; }
 .form-row-checkbox label { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--espresso); }
 .form-row-checkbox input { width: auto; }
 .image-preview { margin-top: 10px; width: 100%; max-height: 160px; object-fit: cover; border-radius: 3px; }
+.field-hint { font-weight: 400; color: var(--stone); font-size: 11.5px; }
+.media-thumbs {
+  display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;
+}
+.media-thumb {
+  position: relative; width: 84px; height: 84px; border-radius: 4px; overflow: hidden;
+  border: 1px solid var(--line); background: #F0EAE0; flex-shrink: 0;
+}
+.media-thumb img, .media-thumb video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.media-thumb-remove {
+  position: absolute; top: 3px; right: 3px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(27,21,18,0.75); color: #fff; border: none;
+  font-size: 13px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.media-thumb-remove:hover { background: var(--danger); }
 .modal-actions { display: flex; gap: 12px; margin-top: 8px; }
 .btn-secondary {
   flex: 1; background: #fff; border: 1px solid var(--line); color: var(--espresso);

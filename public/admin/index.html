@@ -128,11 +128,17 @@
     <div class="form-row form-row-checkbox">
       <label><input type="checkbox" id="itemFeatured" name="featured"> გამორჩეული</label>
     </div>
+    <div class="form-row" id="existingMediaRow" hidden>
+      <label>არსებული ფოტო/ვიდეო</label>
+      <div class="media-thumbs" id="existingMediaThumbs"></div>
+    </div>
     <div class="form-row">
-      <label for="itemImage">ფოტო ან ვიდეო <span id="imageRequiredNote">*</span></label>
-      <input type="file" id="itemImage" name="image" accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime">
-      <img id="imagePreview" class="image-preview" hidden>
-      <video id="videoPreview" class="image-preview" muted controls hidden></video>
+      <label for="itemImage">
+        <span id="imageFieldLabel">ფოტო ან ვიდეო</span> <span id="imageRequiredNote">*</span>
+        <span class="field-hint">(შეგიძლია რამდენიმე ერთდროულად აირჩიო)</span>
+      </label>
+      <input type="file" id="itemImage" name="images" multiple accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime">
+      <div class="media-thumbs" id="newFilesPreview"></div>
     </div>
     <div class="modal-actions">
       <button type="button" class="btn-secondary" id="cancelModalBtn">გაუქმება</button>
