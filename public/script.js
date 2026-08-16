@@ -39,15 +39,20 @@ function renderGallery(filter) {
     galleryGrid.innerHTML = '<p class="gallery-loading">ამ კატეგორიაში ჯერ არაფერია დამატებული.</p>';
     return;
   }
-  galleryGrid.innerHTML = items.map(item => `
+  galleryGrid.innerHTML = items.map(item => {
+    const media = item.media_type === 'video'
+      ? `<video src="${item.image_path}" muted loop playsinline preload="metadata" onmouseover="this.play()" onmouseout="this.pause()"></video>`
+      : `<img src="${item.image_path}" alt="${escapeHtml(item.title)}" loading="lazy">`;
+    return `
     <div class="gallery-card">
-      <img src="${item.image_path}" alt="${escapeHtml(item.title)}" loading="lazy">
+      ${media}
       <div class="gallery-caption">
         <span>${CATEGORY_LABELS[item.category] || item.category}</span>
         <h4>${escapeHtml(item.title)}</h4>
       </div>
     </div>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function escapeHtml(str) {
