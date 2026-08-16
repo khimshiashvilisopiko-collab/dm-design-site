@@ -20,6 +20,7 @@ input, select, textarea { font-family: inherit; }
   min-height: 100vh; display: flex; align-items: center; justify-content: center;
   background: var(--espresso);
 }
+.login-screen[hidden] { display: none; }
 .login-card {
   background: var(--espresso-2); border: 1px solid rgba(242,235,221,0.14);
   padding: 44px; width: 100%; max-width: 360px; border-radius: 3px;
@@ -41,6 +42,7 @@ input, select, textarea { font-family: inherit; }
 
 /* ---- app shell ---- */
 .admin-app { display: flex; min-height: 100vh; }
+.admin-app[hidden] { display: none; }
 .sidebar {
   width: 230px; background: var(--espresso); color: var(--ivory);
   display: flex; flex-direction: column; padding: 28px 18px; flex-shrink: 0;
@@ -103,6 +105,7 @@ tr:last-child td { border-bottom: none; }
   position: fixed; inset: 0; background: rgba(27,21,18,0.55);
   display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px;
 }
+.modal-overlay[hidden] { display: none; }
 .modal-card {
   background: #fff; padding: 32px; width: 100%; max-width: 440px; border-radius: 5px;
   max-height: 90vh; overflow-y: auto;
