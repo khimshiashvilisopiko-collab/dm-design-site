@@ -42,12 +42,20 @@ const storage = multer.diskStorage({
 });
 const upload = multer({
   storage,
-  limits: { fileSize: 8 * 1024 * 1024 }, // 8MB
+  limits: { fileSize: 80 * 1024 * 1024 }, // 80MB — enough for short product-demo video clips
   fileFilter: (req, file, cb) => {
-    const ok = ['.jpg', '.jpeg', '.png', '.webp'].includes(path.extname(file.originalname).toLowerCase());
-    cb(ok ? null : new Error('მხოლოდ სურათებია დაშვებული (jpg, png, webp)'), ok);
+    const ext = path.extname(file.originalname).toLowerCase();
+    const imageExts = ['.jpg', '.jpeg', '.png', '.webp'];
+    const videoExts = ['.mp4', '.webm', '.mov'];
+    const ok = imageExts.includes(ext) || videoExts.includes(ext);
+    cb(ok ? null : new Error('დაშვებულია მხოლოდ სურათები (jpg, png, webp) ან ვიდეო (mp4, webm, mov)'), ok);
   }
 });
+
+function mediaTypeFromFilename(filename) {
+  const ext = path.extname(filename).toLowerCase();
+  return ['.mp4', '.webm', '.mov'].includes(ext) ? 'video' : 'image';
+}
 
 app.use('/uploads', express.static(uploadDir));
 
@@ -130,12 +138,13 @@ app.get('/api/admin/catalog', requireAuth, (req, res) => {
 app.post('/api/admin/catalog', requireAuth, upload.single('image'), (req, res) => {
   const { category, title, description, sort_order, featured } = req.body;
   if (!category || !title || !req.file) {
-    return res.status(400).json({ error: 'კატეგორია, სათაური და სურათი სავალდებულოა' });
+    return res.status(400).json({ error: 'კატეგორია, სათაური და ფაილი სავალდებულოა' });
   }
   const imagePath = '/uploads/' + req.file.filename;
-  const stmt = db.prepare(`INSERT INTO catalog_items (category, title, description, image_path, sort_order, featured) VALUES (?,?,?,?,?,?)`);
-  const result = stmt.run(category, title, description || '', imagePath, Number(sort_order) || 0, featured ? 1 : 0);
-  res.json({ success: true, id: result.lastInsertRowid, image_path: imagePath });
+  const mediaType = mediaTypeFromFilename(req.file.filename);
+  const stmt = db.prepare(`INSERT INTO catalog_items (category, title, description, image_path, media_type, sort_order, featured) VALUES (?,?,?,?,?,?,?)`);
+  const result = stmt.run(category, title, description || '', imagePath, mediaType, Number(sort_order) || 0, featured ? 1 : 0);
+  res.json({ success: true, id: result.lastInsertRowid, image_path: imagePath, media_type: mediaType });
 });
 
 app.put('/api/admin/catalog/:id', requireAuth, upload.single('image'), (req, res) => {
@@ -145,16 +154,18 @@ app.put('/api/admin/catalog/:id', requireAuth, upload.single('image'), (req, res
 
   const { category, title, description, sort_order, featured } = req.body;
   let imagePath = existing.image_path;
+  let mediaType = existing.media_type;
   if (req.file) {
     imagePath = '/uploads/' + req.file.filename;
+    mediaType = mediaTypeFromFilename(req.file.filename);
     // remove old uploaded file if it was a real upload (not a placeholder asset)
     if (existing.image_path.startsWith('/uploads/')) {
       const oldFile = path.join(uploadDir, path.basename(existing.image_path));
       fs.unlink(oldFile, () => {});
     }
   }
-  db.prepare(`UPDATE catalog_items SET category=?, title=?, description=?, image_path=?, sort_order=?, featured=? WHERE id=?`)
-    .run(category || existing.category, title || existing.title, description ?? existing.description, imagePath, Number(sort_order) || 0, featured ? 1 : 0, id);
+  db.prepare(`UPDATE catalog_items SET category=?, title=?, description=?, image_path=?, media_type=?, sort_order=?, featured=? WHERE id=?`)
+    .run(category || existing.category, title || existing.title, description ?? existing.description, imagePath, mediaType, Number(sort_order) || 0, featured ? 1 : 0, id);
   res.json({ success: true });
 });
 

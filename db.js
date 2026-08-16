@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS catalog_items (
   title TEXT NOT NULL,
   description TEXT,
   image_path TEXT NOT NULL,
+  media_type TEXT DEFAULT 'image', -- image | video
   sort_order INTEGER DEFAULT 0,
   featured INTEGER DEFAULT 0,
   created_at TEXT DEFAULT (datetime('now'))
@@ -41,6 +42,13 @@ CREATE TABLE IF NOT EXISTS admin_users (
   password_hash TEXT NOT NULL
 );
 `);
+
+// migration safety net: if catalog_items already existed from before the
+// media_type column was introduced, add it now so old databases still work
+const catalogColumns = db.prepare(`PRAGMA table_info(catalog_items)`).all().map(c => c.name);
+if (!catalogColumns.includes('media_type')) {
+  db.exec(`ALTER TABLE catalog_items ADD COLUMN media_type TEXT DEFAULT 'image'`);
+}
 
 // Seed a default admin user if none exists (username/password printed to console on first run)
 const adminCount = db.prepare('SELECT COUNT(*) AS c FROM admin_users').get().c;
