@@ -16,7 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
-  store: new SQLiteStore({ db: 'sessions.db', dir: path.join(__dirname, 'data') }),
+  store: new SQLiteStore({ db: 'sessions.db', dir: process.env.DATA_DIR ? path.join(process.env.DATA_DIR, 'db') : path.join(__dirname, 'data') }),
   secret: process.env.SESSION_SECRET || 'dm-design-secret-change-me',
   resave: false,
   saveUninitialized: false,
@@ -29,7 +29,10 @@ function requireAuth(req, res, next) {
 }
 
 // ---------- file upload ----------
-const uploadDir = path.join(__dirname, 'uploads');
+// Uploaded files live under DATA_DIR (a Render Persistent Disk mount) when
+// configured, so they survive redeploys — otherwise fall back to a local
+// "uploads" folder for development.
+const uploadDir = process.env.DATA_DIR ? path.join(process.env.DATA_DIR, 'uploads') : path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
 const storage = multer.diskStorage({

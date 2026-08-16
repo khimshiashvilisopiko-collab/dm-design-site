@@ -3,10 +3,10 @@ const path = require('path');
 const fs = require('fs');
 const bcrypt = require('bcryptjs');
 
-// ensure the data directory exists before opening the database —
-// Git does not track empty folders, so on a fresh clone/deploy this
-// directory may not exist yet
-const dataDir = path.join(__dirname, 'data');
+// Data directory — configurable via DATA_DIR so it can point at a Render
+// Persistent Disk mount (e.g. /var/data). Falls back to a local "data"
+// folder next to this file for local development.
+const dataDir = process.env.DATA_DIR ? path.join(process.env.DATA_DIR, 'db') : path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
 const db = new Database(path.join(dataDir, 'dmdesign.db'));
