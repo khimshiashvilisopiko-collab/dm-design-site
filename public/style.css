@@ -245,7 +245,7 @@ button { font-family: inherit; cursor: pointer; }
    ========================================================================== */
 .services { padding: 110px 0; background: var(--espresso); color: var(--ivory); }
 .services-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px;
+  display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px;
   background: var(--line);
   border: 1px solid var(--line);
 }

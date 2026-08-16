@@ -15,6 +15,7 @@ const CATEGORY_LABELS = {
   kitchen: 'სამზარეულო',
   bathroom: 'აბაზანა',
   living: 'მისაღები',
+  bedroom: 'საძინებელი',
   custom: 'ინდივიდუალური'
 };
 
