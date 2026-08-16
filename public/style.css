@@ -204,7 +204,10 @@ button { font-family: inherit; cursor: pointer; }
   display: grid; grid-template-columns: 0.9fr 1fr; gap: 72px; align-items: center;
 }
 .about-media { position: relative; }
-.about-media img { border-radius: 2px; }
+.about-media img {
+  border-radius: 2px; width: 100%; aspect-ratio: 4/5; object-fit: cover;
+  transition: opacity 0.4s ease;
+}
 .about-badge {
   position: absolute; left: -28px; bottom: -28px;
   background: var(--espresso); color: var(--ivory);

@@ -28,9 +28,36 @@ async function loadCatalog() {
     const res = await fetch('/api/catalog');
     allItems = await res.json();
     renderGallery('all');
+    startAboutMediaRotation();
   } catch (err) {
     galleryGrid.innerHTML = '<p class="gallery-loading">კატალოგის ჩატვირთვა ვერ მოხერხდა.</p>';
   }
+}
+
+// ---- "About" section image — auto-rotates through recent/featured work photos ----
+function startAboutMediaRotation() {
+  const imgEl = document.getElementById('aboutMediaImg');
+  if (!imgEl) return;
+
+  // prefer featured items with an image (skip videos — this slot is a still photo);
+  // fall back to any image if nothing is marked featured yet
+  const imagesOnly = allItems.filter(i => i.media_type !== 'video' && i.image_path);
+  const featured = imagesOnly.filter(i => i.featured);
+  const pool = (featured.length ? featured : imagesOnly).slice(0, 6);
+  if (!pool.length) return;
+
+  let index = 0;
+  imgEl.src = pool[0].image_path;
+
+  if (pool.length < 2) return; // nothing to rotate through
+  setInterval(() => {
+    index = (index + 1) % pool.length;
+    imgEl.style.opacity = '0';
+    setTimeout(() => {
+      imgEl.src = pool[index].image_path;
+      imgEl.style.opacity = '1';
+    }, 400);
+  }, 4000);
 }
 
 function renderGallery(filter) {
