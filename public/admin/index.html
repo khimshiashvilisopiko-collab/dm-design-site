@@ -129,9 +129,10 @@
       <label><input type="checkbox" id="itemFeatured" name="featured"> გამორჩეული</label>
     </div>
     <div class="form-row">
-      <label for="itemImage">სურათი <span id="imageRequiredNote">*</span></label>
-      <input type="file" id="itemImage" name="image" accept="image/png,image/jpeg,image/webp">
+      <label for="itemImage">ფოტო ან ვიდეო <span id="imageRequiredNote">*</span></label>
+      <input type="file" id="itemImage" name="image" accept="image/png,image/jpeg,image/webp,video/mp4,video/webm,video/quicktime">
       <img id="imagePreview" class="image-preview" hidden>
+      <video id="videoPreview" class="image-preview" muted controls hidden></video>
     </div>
     <div class="modal-actions">
       <button type="button" class="btn-secondary" id="cancelModalBtn">გაუქმება</button>

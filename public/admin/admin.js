@@ -70,7 +70,9 @@ async function loadCatalogTable() {
   }
   tbody.innerHTML = items.map(item => `
     <tr data-id="${item.id}">
-      <td><img class="thumb" src="${item.image_path}" alt=""></td>
+      <td>${item.media_type === 'video'
+        ? `<video class="thumb" src="${item.image_path}" muted></video>`
+        : `<img class="thumb" src="${item.image_path}" alt="">`}</td>
       <td>${escapeHtml(item.title)}</td>
       <td>${CATEGORY_LABELS[item.category] || item.category}</td>
       <td>${item.sort_order}</td>
@@ -165,7 +167,12 @@ const itemModal = document.getElementById('itemModal');
 const itemForm = document.getElementById('itemForm');
 const modalTitle = document.getElementById('modalTitle');
 const imagePreview = document.getElementById('imagePreview');
+const videoPreview = document.getElementById('videoPreview');
 const imageRequiredNote = document.getElementById('imageRequiredNote');
+
+function isVideoFile(name) {
+  return /\.(mp4|webm|mov)$/i.test(name || '');
+}
 
 document.getElementById('newItemBtn').addEventListener('click', () => openItemModal(null));
 document.getElementById('cancelModalBtn').addEventListener('click', closeItemModal);
@@ -174,6 +181,7 @@ function openItemModal(item) {
   itemForm.reset();
   document.getElementById('itemFormMsg').textContent = '';
   imagePreview.hidden = true;
+  videoPreview.hidden = true;
   if (item) {
     modalTitle.textContent = 'ნამუშევრის რედაქტირება';
     document.getElementById('itemId').value = item.id;
@@ -182,8 +190,13 @@ function openItemModal(item) {
     document.getElementById('itemDescription').value = item.description || '';
     document.getElementById('itemSort').value = item.sort_order;
     document.getElementById('itemFeatured').checked = !!item.featured;
-    imagePreview.src = item.image_path;
-    imagePreview.hidden = false;
+    if (item.media_type === 'video') {
+      videoPreview.src = item.image_path;
+      videoPreview.hidden = false;
+    } else {
+      imagePreview.src = item.image_path;
+      imagePreview.hidden = false;
+    }
     imageRequiredNote.style.display = 'none';
   } else {
     modalTitle.textContent = 'ახალი ნამუშევარი';
@@ -197,8 +210,16 @@ function closeItemModal() { itemModal.hidden = true; }
 document.getElementById('itemImage').addEventListener('change', (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  imagePreview.src = URL.createObjectURL(file);
-  imagePreview.hidden = false;
+  const url = URL.createObjectURL(file);
+  if (isVideoFile(file.name)) {
+    imagePreview.hidden = true;
+    videoPreview.src = url;
+    videoPreview.hidden = false;
+  } else {
+    videoPreview.hidden = true;
+    imagePreview.src = url;
+    imagePreview.hidden = false;
+  }
 });
 
 itemForm.addEventListener('submit', async (e) => {
