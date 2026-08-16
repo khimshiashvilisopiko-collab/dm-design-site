@@ -39,13 +39,22 @@ function renderGallery(filter) {
     galleryGrid.innerHTML = '<p class="gallery-loading">ამ კატეგორიაში ჯერ არაფერია დამატებული.</p>';
     return;
   }
-  galleryGrid.innerHTML = items.map(item => {
-    const media = item.media_type === 'video'
-      ? `<video src="${item.image_path}" muted loop playsinline preload="metadata" onmouseover="this.play()" onmouseout="this.pause()"></video>`
-      : `<img src="${item.image_path}" alt="${escapeHtml(item.title)}" loading="lazy">`;
+  galleryGrid.innerHTML = items.map((item, cardIndex) => {
+    const media = (item.media && item.media.length) ? item.media : [{ path: item.image_path, type: item.media_type }];
+    const slides = media.map((m, i) => m.type === 'video'
+      ? `<video class="gallery-slide${i === 0 ? ' active' : ''}" src="${m.path}" muted loop playsinline preload="metadata" data-index="${i}"></video>`
+      : `<img class="gallery-slide${i === 0 ? ' active' : ''}" src="${m.path}" alt="${escapeHtml(item.title)}" loading="lazy" data-index="${i}">`
+    ).join('');
+    const hasMultiple = media.length > 1;
+    const arrows = hasMultiple ? `
+        <button type="button" class="gallery-nav gallery-nav-prev" aria-label="წინა">‹</button>
+        <button type="button" class="gallery-nav gallery-nav-next" aria-label="შემდეგი">›</button>
+        <div class="gallery-dots">${media.map((_, i) => `<span class="gallery-dot${i === 0 ? ' active' : ''}" data-index="${i}"></span>`).join('')}</div>
+    ` : '';
     return `
-    <div class="gallery-card">
-      ${media}
+    <div class="gallery-card" data-card="${cardIndex}" data-current="0">
+      <div class="gallery-slides">${slides}</div>
+      ${arrows}
       <div class="gallery-caption">
         <span>${CATEGORY_LABELS[item.category] || item.category}</span>
         <h4>${escapeHtml(item.title)}</h4>
@@ -54,7 +63,45 @@ function renderGallery(filter) {
     </div>
   `;
   }).join('');
+
+  // play the active video on hover, pause when leaving
+  galleryGrid.querySelectorAll('.gallery-card').forEach(card => {
+    card.addEventListener('mouseenter', () => {
+      const activeVideo = card.querySelector('.gallery-slide.active video, video.gallery-slide.active');
+      if (activeVideo) activeVideo.play().catch(() => {});
+    });
+    card.addEventListener('mouseleave', () => {
+      card.querySelectorAll('video.gallery-slide').forEach(v => v.pause());
+    });
+  });
 }
+
+function showSlide(card, index) {
+  const slides = card.querySelectorAll('.gallery-slide');
+  const dots = card.querySelectorAll('.gallery-dot');
+  slides.forEach(s => {
+    const isActive = Number(s.dataset.index) === index;
+    s.classList.toggle('active', isActive);
+    if (s.tagName === 'VIDEO') { isActive ? s.play().catch(() => {}) : s.pause(); }
+  });
+  dots.forEach(d => d.classList.toggle('active', Number(d.dataset.index) === index));
+  card.dataset.current = index;
+}
+
+galleryGrid.addEventListener('click', (e) => {
+  const card = e.target.closest('.gallery-card');
+  if (!card) return;
+  const slideCount = card.querySelectorAll('.gallery-slide').length;
+  const current = Number(card.dataset.current || 0);
+
+  if (e.target.closest('.gallery-nav-next')) {
+    showSlide(card, (current + 1) % slideCount);
+  } else if (e.target.closest('.gallery-nav-prev')) {
+    showSlide(card, (current - 1 + slideCount) % slideCount);
+  } else if (e.target.closest('.gallery-dot')) {
+    showSlide(card, Number(e.target.closest('.gallery-dot').dataset.index));
+  }
+});
 
 function escapeHtml(str) {
   const div = document.createElement('div');
